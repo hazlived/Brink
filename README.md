@@ -14,6 +14,7 @@
 ![Chrome](https://img.shields.io/badge/Chrome-Supported-4285F4?style=flat-square&logo=googlechrome&logoColor=white)
 ![Firefox](https://img.shields.io/badge/Firefox-109+-FF7139?style=flat-square&logo=firefoxbrowser&logoColor=white)
 ![Firefox for Android](https://img.shields.io/badge/Firefox_for_Android-121+-FF7139?style=flat-square&logo=firefox&logoColor=white)
+[![Mozilla Add-ons](https://img.shields.io/badge/Mozilla_Add--ons-Get_Brink-FF7139?style=flat-square&logo=firefox&logoColor=white)](https://addons.mozilla.org/en-US/firefox/addon/brink/)
 ![License](https://img.shields.io/badge/license-MIT-22c55e?style=flat-square)
 ![No Dependencies](https://img.shields.io/badge/dependencies-none-lightgrey?style=flat-square)
 
@@ -111,15 +112,15 @@ The name says it all: you're always on the **brink**.
 
 5. Brink will appear in your toolbar for the current session.
 
-> ⚠️ Temporary add-ons in Firefox are removed when the browser closes. For a permanent install, the extension needs to be signed through [Mozilla Add-ons](https://addons.mozilla.org). Brink is fully MV3-compatible with Firefox 109+.
+> ⚠️ Temporary add-ons in Firefox are removed when the browser closes. For a permanent install, get the signed version from [Mozilla Add-ons](https://addons.mozilla.org/en-US/firefox/addon/brink/). Brink is fully MV3-compatible with Firefox 109+.
 
 ---
 
 ### Firefox for Android
 
-Brink is available on **Firefox for Android 121+** via [Mozilla Add-ons (AMO)](https://addons.mozilla.org).
+Brink is available on **Firefox for Android 121+** via [Mozilla Add-ons](https://addons.mozilla.org/en-US/firefox/addon/brink/).
 
-1. Open **Firefox for Android** and go to the [Brink add-on page](https://addons.mozilla.org) on AMO.
+1. Open **Firefox for Android** and go to the [Brink add-on page](https://addons.mozilla.org/en-US/firefox/addon/brink/) on AMO.
 2. Tap **Add to Firefox**.
 3. The overlay widget and in-page toast work on Android. System notifications are not available on this platform and are gracefully skipped — the in-page toast still fires when a countdown ends.
 
