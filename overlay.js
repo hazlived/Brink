@@ -105,6 +105,10 @@ const CSS = `
 const SVG_MINUS = `<svg width="10" height="2" viewBox="0 0 10 2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="1" y1="1" x2="9" y2="1"/></svg>`;
 const SVG_PLUS  = `<svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="5" y1="1" x2="5" y2="9"/><line x1="1" y1="5" x2="9" y2="5"/></svg>`;
 
+function parseSvg(svgString) {
+    return new DOMParser().parseFromString(svgString, 'image/svg+xml').documentElement.cloneNode(true);
+}
+
 let hostEl      = null;
 let shadow      = null;
 let currentEvt  = null;
@@ -184,31 +188,36 @@ function mount(event, position, minimized) {
 
     const widget = document.createElement('div');
     widget.className = 'widget' + (minimized ? ' minimized' : '');
-    widget.innerHTML = `
-        <div class="drag">
-            <span></span><span></span>
-            <span></span><span></span>
-            <span></span><span></span>
-        </div>
-        <div class="body">
-            <div class="event-name"></div>
-            <div class="time">--:--:--</div>
-        </div>
-        <button class="min-btn" title="${minimized ? 'Expand' : 'Minimize'}">
-            ${minimized ? SVG_PLUS : SVG_MINUS}
-        </button>
-    `;
+
+    const drag = document.createElement('div');
+    drag.className = 'drag';
+    for (let i = 0; i < 6; i++) drag.appendChild(document.createElement('span'));
+
+    const bodyDiv = document.createElement('div');
+    bodyDiv.className = 'body';
+    const nameEl = document.createElement('div');
+    nameEl.className = 'event-name';
+    const timeEl = document.createElement('div');
+    timeEl.className = 'time';
+    timeEl.textContent = '--:--:--';
+    bodyDiv.append(nameEl, timeEl);
+
+    const minBtn = document.createElement('button');
+    minBtn.className = 'min-btn';
+    minBtn.title = minimized ? 'Expand' : 'Minimize';
+    minBtn.appendChild(parseSvg(minimized ? SVG_PLUS : SVG_MINUS));
+
+    widget.append(drag, bodyDiv, minBtn);
     shadow.appendChild(widget);
 
     setEvent(event);
     setupDrag();
 
-    shadow.querySelector('.min-btn').addEventListener('click', (e) => {
+    minBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         const isMin = widget.classList.toggle('minimized');
-        const btn = shadow.querySelector('.min-btn');
-        btn.innerHTML = isMin ? SVG_PLUS : SVG_MINUS;
-        btn.title = isMin ? 'Expand' : 'Minimize';
+        minBtn.replaceChildren(parseSvg(isMin ? SVG_PLUS : SVG_MINUS));
+        minBtn.title = isMin ? 'Expand' : 'Minimize';
         chrome.storage.local.set({ overlayMinimized: isMin });
     });
 }
@@ -440,31 +449,48 @@ function showTimesUpToast(eventName, color) {
     const card = document.createElement('div');
     card.className = 'card';
     card.style.setProperty('--c', color);
-    card.innerHTML = `
-        <div class="icon">${TOAST_TROPHY}</div>
-        <div class="body">
-            <div class="title">Time's Up!</div>
-            <div class="subtitle">${safeText(eventName)}</div>
-        </div>
-        <button class="dismiss" title="Dismiss">${TOAST_X}</button>
-        <div class="bar"><div class="bar-fill"></div></div>
-    `;
+
+    const iconDiv = document.createElement('div');
+    iconDiv.className = 'icon';
+    iconDiv.appendChild(parseSvg(TOAST_TROPHY));
+
+    const toastBody = document.createElement('div');
+    toastBody.className = 'body';
+    const titleDiv = document.createElement('div');
+    titleDiv.className = 'title';
+    titleDiv.textContent = "Time's Up!";
+    const subtitleDiv = document.createElement('div');
+    subtitleDiv.className = 'subtitle';
+    subtitleDiv.textContent = eventName;
+    toastBody.append(titleDiv, subtitleDiv);
+
+    const dismissBtn = document.createElement('button');
+    dismissBtn.className = 'dismiss';
+    dismissBtn.title = 'Dismiss';
+    dismissBtn.appendChild(parseSvg(TOAST_X));
+
+    const bar = document.createElement('div');
+    bar.className = 'bar';
+    const barFill = document.createElement('div');
+    barFill.className = 'bar-fill';
+    bar.appendChild(barFill);
+
+    card.append(iconDiv, toastBody, dismissBtn, bar);
     toastShadow.appendChild(card);
 
     // Slide in
     requestAnimationFrame(() => requestAnimationFrame(() => card.classList.add('in')));
 
     // Progress bar drain
-    const start   = Date.now();
-    const fillEl  = toastShadow.querySelector('.bar-fill');
+    const start = Date.now();
     toastProgTimer = setInterval(() => {
         const pct = Math.max(0, 100 - ((Date.now() - start) / TOAST_DURATION) * 100);
-        if (fillEl) fillEl.style.width = pct + '%';
+        barFill.style.width = pct + '%';
         if (pct === 0) removeToast();
     }, 60);
 
     // Dismiss button
-    toastShadow.querySelector('.dismiss').addEventListener('click', () => removeToast());
+    dismissBtn.addEventListener('click', () => removeToast());
 }
 
 function removeToast(immediate) {
@@ -487,14 +513,6 @@ function removeToast(immediate) {
         toastHost && toastHost.remove();
         toastHost = null; toastShadow = null;
     }, 350);
-}
-
-function safeText(str) {
-    return String(str)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;');
 }
 
 // ── Message listener (fired by background.js on alarm) ─────────────────────

@@ -234,10 +234,13 @@ class EventManager {
 
     renderEventsList() {
         const container = document.getElementById('eventsContainer');
-        container.innerHTML = '';
+        container.replaceChildren();
 
         if (this.events.length === 0) {
-            container.innerHTML = '<div class="empty-state">No events yet. Add one!</div>';
+            const empty = document.createElement('div');
+            empty.className = 'empty-state';
+            empty.textContent = 'No events yet. Add one!';
+            container.appendChild(empty);
             return;
         }
 
@@ -264,23 +267,42 @@ class EventManager {
                 day: 'numeric', month: 'short', year: 'numeric'
             });
 
-            div.innerHTML = `
-                <div class="event-info">
-                    <div class="event-name">${this.escapeHtml(event.name)}</div>
-                    <div class="event-remaining">${dateStr} · ${remaining}</div>
-                </div>
-                <div class="event-actions">
-                    <button class="btn-set${isActive ? ' is-active' : ''}" type="button">
-                        ${isActive
-                            ? '<svg width="11" height="9" viewBox="0 0 11 9" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1,4.5 3.8,7.5 10,1"/></svg> Active'
-                            : 'Set'}
-                    </button>
-                    <button class="btn-delete" type="button">Delete</button>
-                </div>
-            `;
+            const infoDiv = document.createElement('div');
+            infoDiv.className = 'event-info';
+            const nameDiv = document.createElement('div');
+            nameDiv.className = 'event-name';
+            nameDiv.textContent = event.name;
+            const remainingDiv = document.createElement('div');
+            remainingDiv.className = 'event-remaining';
+            remainingDiv.textContent = `${dateStr} · ${remaining}`;
+            infoDiv.append(nameDiv, remainingDiv);
 
-            div.querySelector('.btn-set').addEventListener('click', () => this.setCurrentEvent(event.id));
-            div.querySelector('.btn-delete').addEventListener('click', () => this.deleteEvent(event.id));
+            const actionsDiv = document.createElement('div');
+            actionsDiv.className = 'event-actions';
+
+            const setBtn = document.createElement('button');
+            setBtn.type = 'button';
+            setBtn.className = 'btn-set' + (isActive ? ' is-active' : '');
+            if (isActive) {
+                const svgEl = new DOMParser().parseFromString(
+                    '<svg width="11" height="9" viewBox="0 0 11 9" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1,4.5 3.8,7.5 10,1"/></svg>',
+                    'image/svg+xml'
+                ).documentElement.cloneNode(true);
+                setBtn.append(svgEl, document.createTextNode(' Active'));
+            } else {
+                setBtn.textContent = 'Set';
+            }
+
+            const delBtn = document.createElement('button');
+            delBtn.type = 'button';
+            delBtn.className = 'btn-delete';
+            delBtn.textContent = 'Delete';
+
+            actionsDiv.append(setBtn, delBtn);
+            div.append(infoDiv, actionsDiv);
+
+            setBtn.addEventListener('click', () => this.setCurrentEvent(event.id));
+            delBtn.addEventListener('click', () => this.deleteEvent(event.id));
             container.appendChild(div);
         });
     }
@@ -354,10 +376,6 @@ class EventManager {
         document.documentElement.style.setProperty('--accent', hex);
         document.documentElement.style.setProperty('--accent-dim', `rgba(${r},${g},${b},0.13)`);
         document.documentElement.style.setProperty('--accent-glow', `rgba(${r},${g},${b},0.28)`);
-    }
-
-    escapeHtml(str) {
-        return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     }
 
     showToast(msg) {

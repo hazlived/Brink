@@ -24,9 +24,11 @@ chrome.alarms.onAlarm.addListener((alarm) => {
 
 // ── Notification click: dismiss it ────────────────────────────────────────
 
-chrome.notifications.onClicked.addListener((id) => {
-    chrome.notifications.clear(id);
-});
+if (chrome.notifications) {
+    chrome.notifications.onClicked.addListener((id) => {
+        chrome.notifications.clear(id);
+    });
+}
 
 // ── Core: sync alarms to current event list ────────────────────────────────
 
@@ -105,6 +107,7 @@ function notifyEvent(event) {
 }
 
 function showSystemNotification(event) {
+    if (!chrome.notifications) return;
     chrome.notifications.create(`brink_notif_${event.id}`, {
         type:     'basic',
         iconUrl:  'icon.png',

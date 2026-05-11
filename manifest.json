@@ -8,6 +8,9 @@
     "gecko": {
       "id": "{52802364-3a8c-4769-8965-78e904f2fad3}",
       "strict_min_version": "109.0"
+    },
+    "gecko_android": {
+      "strict_min_version": "121.0"
     }
   },
 
@@ -15,7 +18,8 @@
   "host_permissions": ["<all_urls>"],
 
   "background": {
-    "service_worker": "background.js"
+    "service_worker": "background.js",
+    "scripts": ["background.js"]
   },
 
   "content_scripts": [

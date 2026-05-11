@@ -13,6 +13,7 @@
 ![Manifest](https://img.shields.io/badge/Manifest-v3-4285F4?style=flat-square)
 ![Chrome](https://img.shields.io/badge/Chrome-Supported-4285F4?style=flat-square&logo=googlechrome&logoColor=white)
 ![Firefox](https://img.shields.io/badge/Firefox-109+-FF7139?style=flat-square&logo=firefoxbrowser&logoColor=white)
+![Firefox for Android](https://img.shields.io/badge/Firefox_for_Android-121+-FF7139?style=flat-square&logo=firefox&logoColor=white)
 ![License](https://img.shields.io/badge/license-MIT-22c55e?style=flat-square)
 ![No Dependencies](https://img.shields.io/badge/dependencies-none-lightgrey?style=flat-square)
 
@@ -27,6 +28,7 @@
 - [Installation](#-installation)
   - [Chrome](#chrome)
   - [Firefox](#firefox)
+  - [Firefox for Android](#firefox-for-android)
 - [How to Use](#-how-to-use)
   - [Adding an Event](#adding-your-first-event)
   - [Managing Events](#managing-events)
@@ -113,6 +115,18 @@ The name says it all: you're always on the **brink**.
 
 ---
 
+### Firefox for Android
+
+Brink is available on **Firefox for Android 121+** via [Mozilla Add-ons (AMO)](https://addons.mozilla.org).
+
+1. Open **Firefox for Android** and go to the [Brink add-on page](https://addons.mozilla.org) on AMO.
+2. Tap **Add to Firefox**.
+3. The overlay widget and in-page toast work on Android. System notifications are not available on this platform and are gracefully skipped — the in-page toast still fires when a countdown ends.
+
+> ℹ️ Sideloading unsigned extensions on Firefox for Android requires enabling Custom Add-on Collections in Firefox settings. For most users, installing via AMO is recommended.
+
+---
+
 ## 🚀 How to Use
 
 ### Adding Your First Event
@@ -174,6 +188,8 @@ When a countdown reaches exactly zero, Brink fires **two simultaneous notificati
 #### 1 · System Notification
 A native OS notification appears via `chrome.notifications`. This works even when the browser is minimized or in the background.
 
+> Not available on Firefox for Android — the in-page toast fires instead.
+
 #### 2 · In-Page Toast
 An animated card slides down from the top of your currently active tab:
 
@@ -203,7 +219,7 @@ Brink requests the minimum set of permissions needed to function:
 |------------|-----------------|
 | `storage` | Saves your events, current event, overlay position, and settings to `chrome.storage.local` — stays on your device |
 | `alarms` | Schedules a `chrome.alarm` for each event's exact deadline — survives popup close, tab close, and browser minimization |
-| `notifications` | Displays a native OS notification when a countdown ends |
+| `notifications` | Displays a native OS notification when a countdown ends (not requested on platforms where it is unavailable) |
 | `host_permissions: <all_urls>` | Allows the content script (`overlay.js`) to inject the live widget and toast on any page you visit |
 
 > 🔐 **No data ever leaves your browser.** Brink has no backend, no analytics, no telemetry. Everything is stored locally via `chrome.storage.local`.
@@ -243,6 +259,7 @@ Brink is split into three independently running parts:
 - **Shadow DOM for the overlay** — Completely encapsulates the widget's CSS. Page styles cannot bleed in; the widget cannot break the page.
 - **`chrome.storage.local` not `localStorage`** — Extension storage is shared across all parts (popup, background, content script). `localStorage` is popup-only.
 - **One notification per event** — Brink tracks notified event IDs in storage to guarantee each event only triggers one notification, no matter how many times the service worker restarts.
+- **No `innerHTML`** — All DOM nodes are built with `createElement` and `textContent`. SVGs are parsed via `DOMParser`. No user input is ever written as raw HTML.
 
 ---
 
@@ -252,7 +269,8 @@ Brink is split into three independently running parts:
 extension/
 │
 ├── manifest.json       # Extension manifest (MV3) — permissions, background SW,
-│                       # content scripts, icons
+│                       # content scripts, icons; declares Firefox 109+ and
+│                       # Firefox for Android 121+ compatibility
 │
 ├── popup.html          # Popup UI shell — three sections: form, countdown, events list
 ├── style.css           # All popup styles — dark theme, design tokens, animations
@@ -265,7 +283,8 @@ extension/
 │                       # Listens for PADHLE_TIMESUP messages from background.js
 │
 ├── background.js       # Service worker — syncs chrome.alarms with the events list,
-│                       # fires system notifications, messages active tab on alarm
+│                       # fires system notifications (where available), messages
+│                       # active tab on alarm
 │
 └── icon.png            # 128×128 extension icon (hourglass, generated programmatically)
 ```
@@ -289,10 +308,11 @@ Brink uses only native browser extension APIs:
 
 - `chrome.storage.local` — persistent key-value storage
 - `chrome.alarms` — exact-time background scheduling
-- `chrome.notifications` — native OS notifications
+- `chrome.notifications` — native OS notifications (desktop only)
 - `chrome.tabs` — messaging the active tab
 - `chrome.runtime` — cross-context messaging
 - **Shadow DOM** — CSS encapsulation for the overlay and toast
+- **DOMParser** — safe SVG injection without `innerHTML`
 
 ---
 
