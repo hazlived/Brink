@@ -9,7 +9,7 @@
 
 <br/>
 
-![Version](https://img.shields.io/badge/version-1.0.0-FFBF00?style=flat-square)
+![Version](https://img.shields.io/badge/version-1.0.2-FFBF00?style=flat-square)
 ![Manifest](https://img.shields.io/badge/Manifest-v3-4285F4?style=flat-square)
 ![Chrome](https://img.shields.io/badge/Chrome-Supported-4285F4?style=flat-square&logo=googlechrome&logoColor=white)
 ![Firefox](https://img.shields.io/badge/Firefox-109+-FF7139?style=flat-square&logo=firefoxbrowser&logoColor=white)
