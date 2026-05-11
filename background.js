@@ -117,14 +117,14 @@ function showSystemNotification(event) {
     });
 }
 
-function showInPageToast(event) {
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+async function showInPageToast(event) {
+    try {
+        const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
         if (!tabs || tabs.length === 0) return;
-        chrome.tabs.sendMessage(tabs[0].id, {
+        await chrome.tabs.sendMessage(tabs[0].id, {
             type:      'PADHLE_TIMESUP',
             eventName: event.name,
             color:     event.color || '#FFBF00'
-        // Silently ignore if the tab has no content script (e.g. chrome:// pages)
-        }).catch(() => {});
-    });
+        });
+    } catch {}
 }

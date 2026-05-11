@@ -106,7 +106,8 @@ const SVG_MINUS = `<svg width="10" height="2" viewBox="0 0 10 2" fill="none" str
 const SVG_PLUS  = `<svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="5" y1="1" x2="5" y2="9"/><line x1="1" y1="5" x2="9" y2="5"/></svg>`;
 
 function parseSvg(svgString) {
-    return new DOMParser().parseFromString(svgString, 'image/svg+xml').documentElement.cloneNode(true);
+    const doc = new DOMParser().parseFromString(svgString, 'image/svg+xml');
+    return document.importNode(doc.documentElement, true);
 }
 
 let hostEl      = null;
@@ -520,6 +521,21 @@ function removeToast(immediate) {
 chrome.runtime.onMessage.addListener((msg) => {
     if (msg.type === 'PADHLE_TIMESUP') {
         showTimesUpToast(msg.eventName, msg.color || '#FFBF00');
+    }
+
+    if (msg.type === 'BRINK_OVERLAY_TOGGLE') {
+        if (msg.enabled) {
+            if (hostEl) return;
+            chrome.storage.local.get(
+                ['events', 'currentEventId', 'overlayPosition', 'overlayMinimized'],
+                (data) => {
+                    const ev = resolveEvent(data.events, data.currentEventId);
+                    if (ev) mount(ev, data.overlayPosition, !!data.overlayMinimized);
+                }
+            );
+        } else {
+            unmount();
+        }
     }
 });
 

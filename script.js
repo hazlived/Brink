@@ -284,11 +284,11 @@ class EventManager {
             setBtn.type = 'button';
             setBtn.className = 'btn-set' + (isActive ? ' is-active' : '');
             if (isActive) {
-                const svgEl = new DOMParser().parseFromString(
+                const svgDoc = new DOMParser().parseFromString(
                     '<svg width="11" height="9" viewBox="0 0 11 9" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1,4.5 3.8,7.5 10,1"/></svg>',
                     'image/svg+xml'
-                ).documentElement.cloneNode(true);
-                setBtn.append(svgEl, document.createTextNode(' Active'));
+                );
+                setBtn.append(document.importNode(svgDoc.documentElement, true), document.createTextNode(' Active'));
             } else {
                 setBtn.textContent = 'Set';
             }
@@ -348,6 +348,17 @@ class EventManager {
         try {
             if (typeof chrome !== 'undefined' && chrome.storage) {
                 await chrome.storage.local.set({ overlayEnabled: this.overlayEnabled });
+            }
+            // Firefox doesn't reliably fire storage.onChanged in content scripts,
+            // so send a direct message to the active tab as well.
+            if (typeof chrome !== 'undefined' && chrome.tabs) {
+                const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+                if (tabs.length > 0) {
+                    chrome.tabs.sendMessage(tabs[0].id, {
+                        type: 'BRINK_OVERLAY_TOGGLE',
+                        enabled: this.overlayEnabled
+                    }).catch(() => {});
+                }
             }
         } catch {}
         this.updateOverlayBtn();
